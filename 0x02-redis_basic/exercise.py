@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Module declares a redis class and methods"""
-import redis
-from uuid import uuid4
-from typing import Union, Callable, Optional
+""" Exercise module
+"""
 from functools import wraps
+import redis
+import uuid
+from typing import Union, Callable, Optional
 
 
 def count_calls(method: Callable) -> Callable:
@@ -56,35 +57,45 @@ def replay(fn: Callable):
 
 
 class Cache:
-    '''declares a Cache redis class'''
+    """ Cache class
+    A cache class for handling redis data
+    """
+
     def __init__(self):
-        '''upon init to store an instance and flush'''
-        self._redis = redis.Redis(host='localhost', port=6379, db=0)
+        """ __init__ method
+        This method instantiates private and public
+        variables of the class it belongs to
+        """
+        self._redis = redis.Redis()
         self._redis.flushdb()
 
     @call_history
     @count_calls
     def store(self, data: Union[str, bytes, int, float]) -> str:
-        '''takes a data argument and returns a string'''
-        rkey = str(uuid4())
-        self._redis.set(rkey, data)
-        return rkey
+        """ store method
+        This method takes data as an argument and
+        returns a string while generating a random
+        key as well as store the data in Redis and
+        and return the key
+        """
+        key = str(uuid.uuid4())
+        self._redis.set(key, data)
+        return key
 
-    def get(self, key: str,
-            fn: Optional[Callable] = None) -> Union[str, bytes, int, float]:
-        '''convert the data back to the desired format'''
+    def get(self, key: str, fn: Optional[Callable] = None):
+        """ convert the data back to the desired format """
         value = self._redis.get(key)
         if fn:
             value = fn(value)
         return value
 
     def get_str(self, key: str) -> str:
-        '''parametrize Cache.get with correct conversion function'''
+        """ parametrize Cache.get with correct conversion function """
         value = self._redis.get(key)
         return value.decode("utf-8")
 
-    def get_int(self, key: str) -> int:
-        '''parametrize Cache.get with correct conversion function'''
+    def get_int(self, key, str):
+        """ parametrize Cache.get with correct conversion function """
         value = self._redis.get(key)
         try:
             value = int(value.decode("utf-8"))
